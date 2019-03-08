@@ -1,0 +1,37 @@
+#logging config
+
+logging:
+ level:
+   org.yw: DEBUG
+ file: ./springbootcamelesb.log
+ root: WARN
+ 
+# expose actuator endpoint via HTTP
+management:
+ endpoints.web.exposure.include: info,health,camelroutes
+ 
+#activemq setting 
+spring:
+  activemq:
+    brokerUrl: tcp://localhost:61616
+    user: admin
+    password: admin
+
+soapEndpointPort: 9009
+
+
+
+# input directory for xquery
+inputdir.xquery: src/data/xqueryinput
+
+# xquery file 
+xquery.file: xquerytemplate/CodetableRequest_xquery.xq
+
+# output directory for xquery
+outputdir.xquery: target/xqueryoutput
+    
+inputqueue1: inputqueue1
+inputqueue2: inputqueue2
+jmstopic1: jmstopic1
+jmstopic2: jmstopic2
+    

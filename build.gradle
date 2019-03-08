@@ -1,0 +1,51 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.4.RELEASE")
+    }
+}
+
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+bootJar {
+    baseName = 'org.yw'
+    version =  '0.0.1-SNAPSHOT'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile(group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'2.0.4.RELEASE') {
+exclude(module: 'spring-boot-starter-tomcat')
+    }
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-undertow', version:'2.0.4.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version:'2.0.4.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-devtools', version:'2.0.4.RELEASE'
+    compile group: 'org.apache.camel', name: 'camel-spring-boot-starter', version:'2.22.0'
+    compile group: 'org.apache.camel', name: 'camel-stream-starter', version:'2.22.0'
+    compile group: 'org.apache.camel', name: 'camel-cxf', version:'2.22.0'
+    compile group: 'org.apache.camel', name: 'camel-cxf-transport', version:'2.22.0'
+    compile group: 'org.apache.cxf', name: 'cxf-rt-transports-http-jetty', version:'3.2.5'
+    compile group: 'org.apache.camel', name: 'camel-saxon', version:'2.22.0'
+    compile group: 'org.apache.camel', name: 'camel-jackson', version:'2.22.0'
+    compile group: 'org.apache.camel', name: 'camel-jaxb', version:'2.22.0'
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version:'2.0.4.RELEASE'
+    testCompile group: 'org.apache.camel', name: 'camel-test-spring', version:'2.22.0'
+}
