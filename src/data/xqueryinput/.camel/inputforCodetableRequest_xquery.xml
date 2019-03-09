@@ -1,7 +1,0 @@
-      <ns1:CodetableRequest xmlns:ns1="http://rail.dbschenker.de/MD/Codetable/Operations/V01" >         
-         <ns1:LowerModificationTimestamp>2014-11-04T02:59:02</ns1:LowerModificationTimestamp>
-         <ns1:UpperModificationTimestamp>2015-03-04T02:59:02</ns1:UpperModificationTimestamp>
-         <ns1:CodeartFilter>
-         		<ns1:Codeart>1</ns1:Codeart>
-         </ns1:CodeartFilter>
-      </ns1:CodetableRequest>
