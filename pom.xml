@@ -154,32 +154,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${springboot.version}</version>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-codegen-plugin</artifactId>
-				<version>3.1.8</version>
-				<executions>
-					<execution>
-						<id>generate-sources</id>
-						<phase>generate-sources</phase>
-						<configuration>
-							<sourceRoot>${project.build.directory}/generated-sources/jaxws</sourceRoot>
-							<wsdlOptions>
-								<wsdlOption>
-									<!-- generate stub code for CAEE.wsdl -->
-									<wsdl>${basedir}/src/main/resources/wsdl/CreateFileServiceService.wsdl</wsdl>
-									<extraargs>
-										<extraarg>-client</extraarg>
-									</extraargs>
-								</wsdlOption>
-							</wsdlOptions>
-						</configuration>
-						<goals>
-							<goal>wsdl2java</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
