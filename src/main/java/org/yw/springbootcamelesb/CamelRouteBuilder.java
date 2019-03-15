@@ -24,6 +24,15 @@ public class CamelRouteBuilder extends RouteBuilder {
 		// ActiveMQ queue -> Transformation(Fixlength to XML) -> ActiveMQ Topic1
 		from("activemq:queue:inputqueue?transacted=true")
 					.routeId("")
+
+					.onException(Exception.class)
+						.process(exchange -> {
+							Exception cause = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+							LOG.error(  "Exception is instance of {}", cause.getClass().getName());
+						})
+					.end()
+
+				/*
 					.onException(BusinessException.class)
 						.log(LoggingLevel.ERROR, "business exception noticed locally /n ${body}")
 						.handled(true).to("mock:monitor").
@@ -35,14 +44,14 @@ public class CamelRouteBuilder extends RouteBuilder {
 						.maximumRedeliveries(2)
 						.onRedelivery(exchange -> {LOG.info("onRedelivery {}", exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER));})
 						.to("activemq:queue:mydeadletterqueue")
-					.end()
+					.end()*/
 					.process(exchange->{
 						String message =exchange.getIn().getBody().toString().toLowerCase();
 						if(message.contains("technicalerror"))
 							throw new TechnicalException("technicalerror");
 
 						if(message.contains("businesserror"))
-							throw new TechnicalException("businesserror");
+							throw new BusinessException("businesserror");
 
 					}).to("activemq:queue:toqueue");
 	}
