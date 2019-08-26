@@ -9,6 +9,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CamelRouteBuilder extends RouteBuilder {
+    /*
+              :    exchange technicalerror send to process  REDELIVERY_COUNTER null
+2019-08-26 20:21:27.562  INFO 3129 --- [mer[inputqueue]] o.y.s.CamelRouteBuilder                  : onRedelivery 1
+2019-08-26 20:21:27.563  INFO 3129 --- [mer[inputqueue]] o.y.s.CamelRouteBuilder                  :    exchange technicalerror send to process  REDELIVERY_COUNTER 1
+2019-08-26 20:21:30.564  INFO 3129 --- [mer[inputqueue]] o.y.s.CamelRouteBuilder                  : onRedelivery 2
+2019-08-26 20:21:30.565  INFO 3129 --- [mer[inputqueue]] o.y.s.CamelRouteBuilder                  :    exchange technicalerror send to process  REDELIVERY_COUNTER 2
+2019-08-26 20:21:33.566  INFO 3129 --- [mer[inputqueue]] o.y.s.CamelRouteBuilder                  : onRedelivery 3
+2019-08-26 20:21:33.567  INFO 3129 --- [mer[inputqueue]] o.y.s.CamelRouteBuilder                  :    exchange technicalerror send to process  REDELIVERY_COUNTER 3
+2019-08-26 20:21:33.567 ERROR 3129 --- [mer[inputqueue]]                                          : TechnicalException caught globally
+2019-08-26 20:21:33.569 ERROR 3129 --- [mer[inputqueue]]                                          : technical exception send to mydeadletterqueue
+
+     */
 
 	private static final Logger LOG = LoggerFactory.getLogger(CamelRouteBuilder.class);
 
