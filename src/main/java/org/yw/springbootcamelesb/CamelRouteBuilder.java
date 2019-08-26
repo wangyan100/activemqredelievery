@@ -16,43 +16,42 @@ public class CamelRouteBuilder extends RouteBuilder {
 	public void configure() throws Exception {
 
 		// General Error handling or error monitoring
-		onException(Exception.class).log(LoggingLevel.INFO, "##### Error caught globally  ##### ${body}");
+		onException(Exception.class).log(LoggingLevel.INFO, "##### Exception caught globally  ##### ${body}");
 
 
+		onException(TechnicalException.class)
+                .log(LoggingLevel.ERROR, "TechnicalException caught globally  ")
+                //.asyncDelayedRedelivery()
+                .redeliveryDelay(3000) // 3 Minutes
+                .maximumRedeliveries(3)
+                .onRedelivery(exchange -> {LOG.info("onRedelivery {}", exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER));})
+                .handled(true)
+                .to("activemq:queue:mydeadletterqueue")
+                .log(LoggingLevel.ERROR, "technical exception send to mydeadletterqueue");
 
 
 		// ActiveMQ queue -> Transformation(Fixlength to XML) -> ActiveMQ Topic1
 		from("activemq:queue:inputqueue?transacted=true")
 					.routeId("")
 
-					.onException(Exception.class)
-						.process(exchange -> {
-							Exception cause = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
-							LOG.error(  "Exception is instance of {}", cause.getClass().getName());
-						})
-					.end()
-
-				/*
 					.onException(BusinessException.class)
 						.log(LoggingLevel.ERROR, "business exception noticed locally /n ${body}")
+                        .redeliveryDelay(3000) // 3 Minutes
+                        .maximumRedeliveries(3)
+                        .onRedelivery(exchange -> {LOG.info("onRedelivery {}", exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER));})
 						.handled(true).to("mock:monitor").
 					end()
-					.onException(TechnicalException.class)
-						.log(LoggingLevel.ERROR, "technical exception noticed locally /n  ${body}")
-						//.asyncDelayedRedelivery()
-						.redeliveryDelay(3000) // 3 Minutes
-						.maximumRedeliveries(2)
-						.onRedelivery(exchange -> {LOG.info("onRedelivery {}", exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER));})
-						.to("activemq:queue:mydeadletterqueue")
-					.end()*/
-					.process(exchange->{
-						String message =exchange.getIn().getBody().toString().toLowerCase();
-						if(message.contains("technicalerror"))
-							throw new TechnicalException("technicalerror");
+                    .process(exchange->{
+                        LOG.info("   exchange {} send to process  REDELIVERY_COUNTER {}",exchange.getIn().getBody().toString(),  exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER));
+                        String message =exchange.getIn().getBody().toString().toLowerCase();
+                        if(message.contains("technicalerror"))
+                            throw new TechnicalException("technicalerror");
 
-						if(message.contains("businesserror"))
-							throw new BusinessException("businesserror");
+                        if(message.contains("businesserror"))
+                            throw new BusinessException("businesserror");
 
-					}).to("activemq:queue:toqueue");
+                    })
+
+                .to("activemq:queue:toqueue");
 	}
 }
