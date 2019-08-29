@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class CamelRouteBuilder extends RouteBuilder {
     /*
+    https://people.apache.org/~dkulp/camel/exception-clause.html
+    https://gist.github.com/bibryam/085f6ef765b5cebecab7
               :    exchange technicalerror send to process  REDELIVERY_COUNTER null
 2019-08-26 20:21:27.562  INFO 3129 --- [mer[inputqueue]] o.y.s.CamelRouteBuilder                  : onRedelivery 1
 2019-08-26 20:21:27.563  INFO 3129 --- [mer[inputqueue]] o.y.s.CamelRouteBuilder                  :    exchange technicalerror send to process  REDELIVERY_COUNTER 1
@@ -27,42 +29,53 @@ public class CamelRouteBuilder extends RouteBuilder {
 	@Override
 	public void configure() throws Exception {
 
-		// General Error handling or error monitoring
-		onException(Exception.class).log(LoggingLevel.INFO, "##### Exception caught globally  ##### ${body}");
 
 
 		onException(TechnicalException.class)
-                .log(LoggingLevel.ERROR, "TechnicalException caught globally  ")
+
+                .log(LoggingLevel.ERROR, "TechnicalException before re-try globally  ")
                 //.asyncDelayedRedelivery()
                 .redeliveryDelay(3000) // 3 Minutes
                 .maximumRedeliveries(3)
-                .onRedelivery(exchange -> {LOG.info("onRedelivery {}", exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER));})
-                .handled(true)
+				//Exchange.FAILURE_ROUTE_ID
+                .onRedelivery(exchange -> {
+                	LOG.info("onRedelivery {} , failed at  {} exception type {}", exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER)
+					,exchange.getFromEndpoint().getEndpointKey() + ": " +exchange.getFromRouteId(), exchange.getProperty(Exchange.EXCEPTION_CAUGHT).getClass());
+                })
+				//here the line below will be executed only maximumRedelivery exceeded ,(problem still exists)
+				//if exception does not happen at 2, or 3 retry, you will not see below code will be displayed
+				// here you must decide either send message to deadletterqueue or just commit it (delete it from original queue)
+				.log(LoggingLevel.ERROR, "TechnicalException after re-try ")
+				.handled(true)
                 .to("activemq:queue:mydeadletterqueue")
-                .log(LoggingLevel.ERROR, "technical exception send to mydeadletterqueue");
+                .end();
 
 
 		// ActiveMQ queue -> Transformation(Fixlength to XML) -> ActiveMQ Topic1
+        //from("activemq:queue:inputqueue")
 		from("activemq:queue:inputqueue?transacted=true")
-					.routeId("")
+					.routeId("activemqroute")
 
 					.onException(BusinessException.class)
 						.log(LoggingLevel.ERROR, "business exception noticed locally /n ${body}")
                         .redeliveryDelay(3000) // 3 Minutes
                         .maximumRedeliveries(3)
                         .onRedelivery(exchange -> {LOG.info("onRedelivery {}", exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER));})
-						.handled(true).to("mock:monitor").
-					end()
+						//here is maxRetry exceeded, still not suceeded
+						.handled(true).to("activemq:queue:bizerror_deadletterqueue")
+                        .end()
                     .process(exchange->{
-                        LOG.info("   exchange {} send to process  REDELIVERY_COUNTER {}",exchange.getIn().getBody().toString(),  exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER));
+
+                        LOG.info("   In process   REDELIVERY_COUNTER {}",exchange.getIn().getBody().toString(),  exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER));
                         String message =exchange.getIn().getBody().toString().toLowerCase();
-                        if(message.contains("technicalerror"))
+                        //if(message.contains("technicalerror") && (exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER)==null || Integer.valueOf(exchange.getIn().getHeader(Exchange.REDELIVERY_COUNTER).toString())<3 ))
+                       if(message.contains("technicalerror"))
                             throw new TechnicalException("technicalerror");
 
                         if(message.contains("businesserror"))
                             throw new BusinessException("businesserror");
 
-                    })
+                    }).id("process-in-route")
 
                 .to("activemq:queue:toqueue");
 	}
