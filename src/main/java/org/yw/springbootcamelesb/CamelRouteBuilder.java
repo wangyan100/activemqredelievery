@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CamelRouteBuilder extends RouteBuilder {
-    /*
+    /* test
     https://people.apache.org/~dkulp/camel/exception-clause.html
     https://gist.github.com/bibryam/085f6ef765b5cebecab7
               :    exchange technicalerror send to process  REDELIVERY_COUNTER null
